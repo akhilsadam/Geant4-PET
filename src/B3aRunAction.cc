@@ -31,7 +31,7 @@
 #include "B3PrimaryGeneratorAction.hh"
 
 #include "G4RunManager.hh"
-#include "G4Run.hh"
+#include "B3aRun.hh"//"G4Run.hh"
 #include "G4AccumulableManager.hh"
 
 #include "G4UnitsTable.hh"
@@ -39,8 +39,8 @@
 
 #include "B3aHistoManager.hh"
 #include "B3DetectorConstruction.hh"
-#include "B3aHistoManager.cc" ///  NEED TO FIX -----
-#include "B3SteppingAction.cc" ///  NEED TO FIX -----
+//#include "B3aHistoManager.cc" ///  NEED TO FIX -----
+//#include "B3SteppingAction.cc" ///  NEED TO FIX -----
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B3aRunAction::B3aRunAction(B3DetectorConstruction* patient)
@@ -48,7 +48,7 @@ B3aRunAction::B3aRunAction(B3DetectorConstruction* patient)
    fGoodEvents(0),
    fSumDose(0.),
    fpatient(patient),
-   fHistoManager(0)  
+   fHistoManager(0)
 {  
   //add new units for dose
   // 
@@ -68,6 +68,7 @@ B3aRunAction::B3aRunAction(B3DetectorConstruction* patient)
   accumulableManager->RegisterAccumulable(fSumDose); 
 
   fHistoManager = new HistoManager(fpatient);
+  fstepMax = fHistoManager->stepMaxV;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,8 +112,10 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
   accumulableManager->Merge();
 
-  // save histograms
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+  
+
+  // save histograms
   if ( analysisManager->IsActive() ) {  
     analysisManager->Write();
     analysisManager->CloseFile();
@@ -132,6 +135,7 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
       = generatorAction->GetParticleGun()->GetParticleDefinition();
     partName = particle->GetParticleName();
   }  
+ 
           
   // Print results
   //

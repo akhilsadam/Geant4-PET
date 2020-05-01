@@ -35,12 +35,15 @@
 #include "B3DetectorConstruction.hh"
 #include "G4UnitsTable.hh"
 
+G4int stepMax = 2000; //Change THIS
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager(B3DetectorConstruction* patient)
   : fFileName("B3A"),fpatient(patient)
 {
   Book();
+  stepMaxV = stepMax;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -86,7 +89,17 @@ void HistoManager::Book()
                 { "E-Deposition (MeV/mm)",
 		  "E-Deposition 2D (MeV/mm)",
 		  "E-Deposition 3D (MeV/mm)",
-		  "Secondary List"};
+		  "Secondary List",
+"E-Deposition Total (MeV)",
+"E-Deposition p+ (MeV)",
+"E-Deposition e+ (MeV)",
+"E-Deposition e- (MeV)",
+"E-Deposition y  (MeV)",
+"Dose (Gy)",
+"Energy-primary(MeV/ns)",
+"Energy-primary(MeV/step)",
+"Energy-directSecond(MeV/step)",
+"Energy-total(MeV/step)"};
 
    const std::string second[] = { "positron","electron","photons","gammas","proton","alpha","Li6","Be7","C11","C12","N15","O15","O16"};
    const int secondSize = sizeof(second)/sizeof(second[0]);
@@ -107,13 +120,17 @@ void HistoManager::Book()
 
   G4double sbins = secondSize;
 
-    G4int ih = analysisManager->CreateH1(id[0], title[0], nbinsx, xmin, xmax);
+    G4int ih = analysisManager->CreateH1(title[0], title[0], nbinsx, xmin, xmax);
     analysisManager->SetH1Activation(ih, true);
 G4cout << "### ####### " << worldsize << " worldsize." << G4endl;
-    G4int ih2 = analysisManager->CreateH2(id[1], title[1], nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+    G4int ih2 = analysisManager->CreateH2(title[1], title[1], nbinsx, xmin, xmax, nbinsy, ymin, ymax);
     analysisManager->SetH2Activation(ih2, true);
-    G4int ih3 = analysisManager->CreateH3(id[2], title[2], nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
+    G4int ih3 = analysisManager->CreateH3(title[2], title[2], nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
     analysisManager->SetH2Activation(ih3, true);
+
+
+
+
 
     /*analysisManager->CreateNtuple(id[3], title[3]);
 	for(int i = 0; i < secondSize; i++)
@@ -123,8 +140,41 @@ G4cout << "### ####### " << worldsize << " worldsize." << G4endl;
 	analysisManager->FinishNtuple();*/
     
 
-    G4int ih4 = analysisManager->CreateH1(id[3], title[3], sbins, 0, sbins);
+    G4int ih4 = analysisManager->CreateH1(title[3], title[3], sbins, 0, sbins);
     analysisManager->SetH1Activation(ih4, true);
+
+//could have used a loop w endpointlist --
+G4int nBinE = 100;
+G4int nBinG = 100;
+
+	G4int ih5 = analysisManager->CreateH1(title[4], title[4], nBinE,0,40);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[5], title[5], nBinE,0,40);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[6], title[6], nBinE,0,20);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[7], title[7], nBinE,0,20);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[8], title[8], nBinE,0,10);
+    	analysisManager->SetH1Activation(ih5, true);
+
+ih5 = analysisManager->CreateH1(title[9], title[9], nBinG,0,5.e-12);
+    	analysisManager->SetH1Activation(ih5, true);
+
+  G4int nbinst = 1000000;
+  G4double tmin = 0.;
+  G4double tmax = 4; //in ns
+//stepmax //in steps
+
+ih5 = analysisManager->CreateH1(title[10], title[10], nbinst, tmin, tmax);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[11], title[11], (stepMax), tmin, stepMax);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[12], title[12], (stepMax), tmin, stepMax);
+    	analysisManager->SetH1Activation(ih5, true);
+ih5 = analysisManager->CreateH1(title[13], title[13], (stepMax), tmin, stepMax);
+    	analysisManager->SetH1Activation(ih5, true);
+
 /*
   // Create all histograms as inactivated 
   // as we have not yet set nbins, vmin, vmax

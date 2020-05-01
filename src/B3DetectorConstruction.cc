@@ -73,15 +73,17 @@ void B3DetectorConstruction::DefineMaterials()
   
   G4Element*  O = man->FindOrBuildElement("O" , isotopes); 
   G4Element* Si = man->FindOrBuildElement("Si", isotopes);
-  G4Element* Lu = man->FindOrBuildElement("Lu", isotopes);  
+  G4Element* Lu = man->FindOrBuildElement("Lu", isotopes);
+  G4Element* Y = man->FindOrBuildElement("Y", isotopes);  
   G4Element* Ar = man->FindOrBuildElement("Ar", isotopes);
   G4Element* Bi = man->FindOrBuildElement("Bi");
   G4Element* Ge = man->FindOrBuildElement("Ge");  
 
-  G4Material* LSO = new G4Material("Lu2SiO5", 7.4*g/cm3, 3);
-  LSO->AddElement(Lu, 2);
-  LSO->AddElement(Si, 1);
-  LSO->AddElement(O , 5);  
+  G4Material* LYSO = new G4Material("LYSO", 7.1*g/cm3, 4);
+  LYSO->AddElement(Lu, 18);
+  LYSO->AddElement(Y, 2);
+  LYSO->AddElement(Si, 10);
+  LYSO->AddElement(O , 50);  
 
   G4Material* lAr = new G4Material("liquidArgon",1.390*g/cm3, 1); 
   lAr->AddElement(Ar, 1);
@@ -127,7 +129,7 @@ G4VPhysicalVolume* B3DetectorConstruction::Construct()
   //
   G4NistManager* nist = G4NistManager::Instance();
   G4Material* default_mat = nist->FindOrBuildMaterial("G4_AIR"); //MODIFIED - swapped out G4_AIR with lAr
-  G4Material* cryst_mat   = nist->FindOrBuildMaterial("BGO");
+  G4Material* cryst_mat   = nist->FindOrBuildMaterial("LYSO");
         
   //     
   // World

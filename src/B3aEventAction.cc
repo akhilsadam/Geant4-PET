@@ -30,7 +30,7 @@
 #include "B3aEventAction.hh"
 #include "B3aRunAction.hh"
 #include "B3Analysis.hh"
-
+#include "B3aHistoManager.hh"
 #include "G4RunManager.hh"
 #include "G4Event.hh"
 
@@ -94,6 +94,8 @@ void B3aEventAction::EndOfEventAction(const G4Event* evt )
 
     fCollID_patient = SDMan->GetCollectionID("patient/dose");    
   }
+
+  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   
   //Energy in crystals : identify 'good events'
   //
@@ -110,6 +112,7 @@ void B3aEventAction::EndOfEventAction(const G4Event* evt )
     if (edep > eThreshold) nbOfFired++;
     //G4cout << "\n  cryst" << copyNb << ": " << edep/keV << " keV ";
     *(itr->second) = edep/MeV; // MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(2, *(itr->second));
   }  
   if (nbOfFired == 2) fRunAction->CountEvent();
  // MODIFIED ----------------------------------------------------------------------------------------
@@ -117,24 +120,28 @@ void B3aEventAction::EndOfEventAction(const G4Event* evt )
   for (itr = evtMap->GetMap()->begin(); itr != evtMap->GetMap()->end(); itr++) {
     G4double edep_p = *(itr->second);
     *(itr->second) = edep_p/MeV; // MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(3, *(itr->second));
   }
   // MODIFIED ----------------------------------------------------------------------------------------
   evtMap = (G4THitsMap<G4double>*)(HCE->GetHC(fCollID_cryst_ep));
   for (itr = evtMap->GetMap()->begin(); itr != evtMap->GetMap()->end(); itr++) {
     G4double edep_ep = *(itr->second);
     *(itr->second) = edep_ep/MeV; // MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(4, *(itr->second));
   }  
   // MODIFIED ----------------------------------------------------------------------------------------
   evtMap = (G4THitsMap<G4double>*)(HCE->GetHC(fCollID_cryst_en));
   for (itr = evtMap->GetMap()->begin(); itr != evtMap->GetMap()->end(); itr++) {
     G4double edep_en = *(itr->second);
     *(itr->second) = edep_en/MeV; // MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(5, *(itr->second));
   }
   // MODIFIED ----------------------------------------------------------------------------------------
   evtMap = (G4THitsMap<G4double>*)(HCE->GetHC(fCollID_cryst_y));
   for (itr = evtMap->GetMap()->begin(); itr != evtMap->GetMap()->end(); itr++) {
     G4double edep_y = *(itr->second);
     *(itr->second) = edep_y/MeV; // MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(6, *(itr->second));
   }
   // ------------------------------------------------------------------------------------------------
 
@@ -148,12 +155,83 @@ void B3aEventAction::EndOfEventAction(const G4Event* evt )
     ///G4int copyNb  = (itr->first);
     dose = *(itr->second);
     *(itr->second) = dose/gray; //MODIFIED TO CONVERT UNITS
+	analysisManager->FillH1(7, *(itr->second));
   }
   if (dose > 0.) fRunAction->SumDose(dose);
 // ------------------------------------------------------------------------------------------------
-  //G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+  //
   //analysisManager->FillH1(1, fTotalEnergyDeposit/MeV);
 
+
+//integrate histograms sanitycheck
+  if (analysisManager->IsActive()) {
+
+	//integrate the hist for Econs. sanity check
+	//Primary
+	const std::vector<double> prmE = (const std::vector<double>) analysisManager->GetH1(9)->bins_sum_w();
+	//Secondary
+	const std::vector<double> secE = (const std::vector<double>) analysisManager->GetH1(10)->bins_sum_w();
+
+	//G4cout << "stepmax = " << stepMax << G4endl;
+	G4int stepMax = fRunAction->fstepMax;
+	
+
+	G4double totalsent = 0;
+	G4double lastEnergy =0;
+	for(int i = 0; i < (stepMax); i++)
+	{
+		/*if((i>0) && (prmE[i] > prmE[(i-1)]))
+		{
+			//secondE = 0; //reset
+			G4cout << "RESET -- PRMI: " << prmE[i] << " PRMI-1: " << prmE[(i-1)] << G4endl;
+		}*/
+		secondE += secE[i];
+		if(prmE[i] == 0)
+		{	
+			if((i < (stepMax+1))&&( prmE[i+1] > lastEnergy ))
+			{
+				secondE = 0;
+				G4cout << "REset" << G4endl;
+			}
+			else
+			{
+				/*G4cout << "HIT zero -- BREAK" << (secE[i]) << G4endl;
+				G4cout << "HIT prmE = " << (prmE[i]) << G4endl;
+				G4cout << "HIT secE = " << (secondE) << G4endl;*/
+			}
+		}
+
+
+
+		if (prmE[i] > 0)
+		{	
+			totalsent = (prmE[i] + secondE);
+			if(abs(totalsent - 40.272013) > 100.)
+			{
+				G4cout << "totalsent = " << (totalsent) << G4endl;
+				G4cout << "prmE = " << (prmE[i]) << G4endl;
+				G4cout << "secE = " << (secondE) << G4endl;
+			}
+			else
+			{
+
+				analysisManager->FillH1(11,i,totalsent);
+			}
+			lastEnergy = prmE[i];
+			
+		}
+	
+
+		/*if((secE[i] != 0) && (prmE[i] == 0))
+		{
+			secondE = 0;
+		}*/
+		//G4cout << "-- PRMI: " << prmE[i] << " PRMI-1: " << prmE[(i-2)] << G4endl;
+	}
+	G4cout << "EVENT ACTION BREAK" << G4endl;
+
+
+  } 
 }  
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

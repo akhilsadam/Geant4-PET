@@ -47,13 +47,14 @@ class HistoManager
   public:
     HistoManager(B3DetectorConstruction* patient);
    ~HistoManager();
+    G4double stepMaxV;
 
   private:
     void Book();
     G4String fFileName;
     B3DetectorConstruction* fpatient;
+    
 };
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

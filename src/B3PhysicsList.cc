@@ -37,7 +37,7 @@
 #include "G4EmExtraPhysics.hh"
 #include "G4HadronElasticPhysicsHP.hh"
 #include "G4StoppingPhysics.hh"
-#include "G4HadronPhysicsQGSP_BIC_HP.hh"
+#include "G4HadronPhysicsQGSP_BIC.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,7 +58,7 @@ B3PhysicsList::B3PhysicsList()
   RegisterPhysics(new G4EmExtraPhysics());
   RegisterPhysics(new G4HadronElasticPhysicsHP());
   RegisterPhysics(new G4StoppingPhysics());
-  RegisterPhysics(new G4HadronPhysicsQGSP_BIC_HP());
+  RegisterPhysics(new G4HadronPhysicsQGSP_BIC());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

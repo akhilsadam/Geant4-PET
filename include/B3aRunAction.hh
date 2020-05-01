@@ -50,7 +50,9 @@ class B3aRunAction : public G4UserRunAction
     virtual void   EndOfRunAction(const G4Run*);
 
     void CountEvent()           { fGoodEvents += 1; };
-    void SumDose(G4double dose) { fSumDose += dose; };  
+    void SumDose(G4double dose) { fSumDose += dose; }; 
+
+    G4int fstepMax;
 
 private:
     G4Accumulable<G4int>    fGoodEvents;

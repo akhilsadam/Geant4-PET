@@ -24,50 +24,46 @@
 // ********************************************************************
 //
 //
-/// \file B3aActionInitialization.cc
-/// \brief Implementation of the B3aActionInitialization class
+/// \file B3aRun.hh
+/// \brief Definition of the B3bRun class
 
-#include "B3aActionInitialization.hh"
-#include "B3aRunAction.hh"
-#include "B3aEventAction.hh"
-#include "B3PrimaryGeneratorAction.hh"
-#include "B3StackingAction.hh"
-#include "B3SteppingAction.hh"
-#include "B3DetectorConstruction.hh"
+#ifndef B3aRun_h
+#define B3aRun_h 1
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "G4Run.hh"
+#include "globals.hh"
+#include "G4StatAnalysis.hh"
 
-B3aActionInitialization::B3aActionInitialization(B3DetectorConstruction* detector)
- : G4VUserActionInitialization(),fDetector(detector)
-{}
+/// Run class
+///
+/// In RecordEvent() there is collected information event per event 
+/// from Hits Collections, and accumulated statistic for the run 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-B3aActionInitialization::~B3aActionInitialization()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void B3aActionInitialization::BuildForMaster() const
+class B3aRun : public G4Run
 {
-  B3aRunAction* runAction = new B3aRunAction(fDetector);
-  SetUserAction(runAction);
-}
+  public:
+    B3aRun();
+    virtual ~B3aRun();
+
+    //virtual void RecordEvent(const G4Event*);
+    virtual void Merge(const G4Run*);
+    
+  public:
+    G4int GetNbGoodEvents() const { return fGoodEvents; }
+    G4double GetSumDose()   const { return fSumDose; }    
+    G4StatAnalysis GetStatDose() const { return fStatDose; }
+
+  private:
+    G4int fCollID_cryst;
+    G4int fCollID_patient;   
+    G4int fPrintModulo;
+    G4int fGoodEvents;
+    G4double fSumDose;
+    G4StatAnalysis fStatDose;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void B3aActionInitialization::Build() const
-{
-  B3aRunAction* runAction = new B3aRunAction(fDetector);
-  SetUserAction(runAction);
+#endif
 
-  B3aEventAction* eventAction = new B3aEventAction(runAction);
-  SetUserAction(eventAction);
-  SetUserAction(new B3PrimaryGeneratorAction);
-  SetUserAction(new B3StackingAction);
-  SetUserAction(new B3SteppingAction(eventAction,fDetector));
-
-  //SetUserAction(new B3StackingAction);
-}  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    

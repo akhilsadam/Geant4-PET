@@ -51,8 +51,7 @@ B3PrimaryGeneratorAction::B3PrimaryGeneratorAction()
   // default particle kinematic
   // MODIFIED to use proton gun instead//////////////////////////////////////	
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleDefinition* particle
-                    = particleTable->FindParticle("proton");//FindParticle("chargedgeantino");
+  G4ParticleDefinition* particle = particleTable->FindParticle("proton");//FindParticle("chargedgeantino");
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticlePosition(G4ThreeVector(0.,0.,0.));
   fParticleGun->SetParticleEnergy(40*MeV);  //SetParticleEnergy(1*eV); between 70-250 MeV   
