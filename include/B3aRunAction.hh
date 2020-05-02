@@ -52,7 +52,8 @@ class B3aRunAction : public G4UserRunAction
     void CountEvent()           { fGoodEvents += 1; };
     void SumDose(G4double dose) { fSumDose += dose; }; 
 
-    G4int fstepMax;
+    G4int fstepMax; 
+    static G4int id;
 
 private:
     G4Accumulable<G4int>    fGoodEvents;

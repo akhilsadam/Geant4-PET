@@ -48,7 +48,12 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 
-G4int id = 0;
+
+std::mutex foo2;
+std::mutex barL2;
+G4int B3SteppingAction::id = 0;
+/*G4double lastEnergy=100;
+G4double seconds = 0;*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,6 +70,7 @@ B3SteppingAction::~B3SteppingAction()
 
 void B3SteppingAction::UserSteppingAction(const G4Step* step)
 {
+std::lock(foo2,barL2);
 
 G4double edep = step->GetTotalEnergyDeposit();
 
@@ -111,7 +117,6 @@ const int titleSize = sizeof(title)/sizeof(title[0]);
 
 G4double timeL = prePoint->GetGlobalTime();
 
-//G4cout << "//--Time (step): " << (timeL/ns) << " ns"<< G4endl;
 //implemented here: log secondaries only when they have been created
 //log the primary only once!
 //std::vector<G4double>::iterator it = find(times.begin(),times.end(),(timeL/ns));
@@ -119,11 +124,12 @@ G4double timeL = prePoint->GetGlobalTime();
 std::string prim = step->GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName();
 
 
-G4double Eprim = (step->GetTrack()->GetTotalEnergy()/MeV) -938;
+G4double Eprim = (step->GetTrack()->GetKineticEnergy()/MeV);
 G4double Esec = 0;
 
 if(prim.compare("proton")==0)
 {
+//G4cout << "//--Time (step): " << (id) << " step"<< G4endl;
 	if(Eprim <=0)
 		Eprim = 0;
 	//ADD ENERGY TO TOTAL LIST
@@ -228,12 +234,24 @@ if(prim.compare("proton")==0)
 		analysisManager->FillH1(8, (timeL/ns), (Eprim));
 		analysisManager->FillH1(9, (id), (Eprim));
 		analysisManager->FillH1(10, (id), (Esec));
+		/*seconds+=Esec;
+		if(Eprim > 30.272)//lastEnergy)
+		{
+			seconds = 0;//Esec;
+			G4cout << "/|\\\\|/--- esec: " << Esec << "LastE: " << lastEnergy << " Eprim: " << Eprim <<G4endl;
+		}
+		analysisManager->FillH1(11, (id), (Eprim + seconds));
+		lastEnergy = Eprim;*/
+
 		id += 1;
 	}
 }
   
  //example of saving random number seed of this event, under condition
  //// if (condition) G4RunManager::GetRunManager()->rndmSaveThisEvent();  
+foo2.unlock();
+barL2.unlock();
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

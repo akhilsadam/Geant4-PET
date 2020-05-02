@@ -37,6 +37,8 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
+#include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
 
 class B3aEventAction;
 class B3DetectorConstruction;
@@ -48,12 +50,13 @@ class B3SteppingAction : public G4UserSteppingAction
   public:
     B3SteppingAction(B3aEventAction*,B3DetectorConstruction*);
    ~B3SteppingAction();
-
+    static G4int id;
     virtual void UserSteppingAction(const G4Step*);
     
   private:
     B3aEventAction* fEventAction;
     B3DetectorConstruction* fpatient;
+
 };
 
 #endif

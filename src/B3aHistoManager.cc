@@ -35,7 +35,7 @@
 #include "B3DetectorConstruction.hh"
 #include "G4UnitsTable.hh"
 
-G4int stepMax = 2000; //Change THIS
+G4int stepMax = 40000; //Change THIS
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -172,7 +172,7 @@ ih5 = analysisManager->CreateH1(title[11], title[11], (stepMax), tmin, stepMax);
     	analysisManager->SetH1Activation(ih5, true);
 ih5 = analysisManager->CreateH1(title[12], title[12], (stepMax), tmin, stepMax);
     	analysisManager->SetH1Activation(ih5, true);
-ih5 = analysisManager->CreateH1(title[13], title[13], (stepMax), tmin, stepMax);
+ih5 = analysisManager->CreateH1(title[13], title[13], (stepMax*2), tmin, stepMax);
     	analysisManager->SetH1Activation(ih5, true);
 
 /*

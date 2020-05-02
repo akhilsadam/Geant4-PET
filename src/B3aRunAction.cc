@@ -39,9 +39,14 @@
 
 #include "B3aHistoManager.hh"
 #include "B3DetectorConstruction.hh"
+#include <mutex>
 //#include "B3aHistoManager.cc" ///  NEED TO FIX -----
 //#include "B3SteppingAction.cc" ///  NEED TO FIX -----
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+std::mutex foo;
+std::mutex barL;
+G4int B3aRunAction::id = 0;
 
 B3aRunAction::B3aRunAction(B3DetectorConstruction* patient)
  : G4UserRunAction(),
@@ -68,7 +73,6 @@ B3aRunAction::B3aRunAction(B3DetectorConstruction* patient)
   accumulableManager->RegisterAccumulable(fSumDose); 
 
   fHistoManager = new HistoManager(fpatient);
-  fstepMax = fHistoManager->stepMaxV;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -103,10 +107,16 @@ void B3aRunAction::BeginOfRunAction(const G4Run* run)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void B3aRunAction::EndOfRunAction(const G4Run* run)
-{
+{  
+  std::lock(foo,barL);
+
   G4int nofEvents = run->GetNumberOfEvent();
-  if (nofEvents == 0) return;
-  
+  if (nofEvents == 0) 
+	{
+		foo.unlock();
+		barL.unlock();	
+		return;	
+	}
 
   // Merge accumulables 
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
@@ -114,6 +124,88 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
 
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   
+//integrate histograms sanitycheck
+
+  if (analysisManager->IsActive() && (!IsMaster())) {
+	
+	//integrate the hist for Econs. sanity check
+	//Primary
+	const std::vector<double> prmE = (const std::vector<double>) analysisManager->GetH1(9)->bins_sum_w();
+	//Secondary
+	const std::vector<double> secE = (const std::vector<double>) analysisManager->GetH1(10)->bins_sum_w();
+
+	//G4cout << "stepmax = " << stepMax << G4endl;
+	
+
+	G4double totalsent = 0;
+	double lastEnergy = 100;
+	G4double secondE = 0;
+	G4int stepMax = fHistoManager->stepMaxV;
+
+	for(int i = 0; i < (stepMax); i++)
+	{
+		/*if((i>0) && (prmE[i] > prmE[(i-1)]))
+		{
+			//secondE = 0; //reset
+			G4cout << "RESET -- PRMI: " << prmE[i] << " PRMI-1: " << prmE[(i-1)] << G4endl;
+		}*/
+		secondE += secE[i];
+		/*if(prmE[i] == 0)
+		{	
+			if((i < (stepMax+1))&&( prmE[i+1] > lastEnergy ))
+			{
+				secondE = 0;
+				G4cout << "REset" << G4endl;
+			}
+			else
+			{
+				///G4cout << "HIT zero -- BREAK" << (secE[i]) << G4endl;
+				G4cout << "HIT prmE = " << (prmE[i]) << G4endl;
+				G4cout << "HIT secE = " << (secondE) << G4endl;///
+			}
+		}*/
+		double diff = (prmE[i] - lastEnergy);
+		if((i>0) && (diff > 30))
+		{
+			secondE = secE[i];
+			G4cout << "||\\-----RESET RESET -- secondE = " << secondE << " diff = "<< diff << G4endl;
+			
+		}
+		//if(prmE[i]+secondE > 40 ){secondE = 0;}
+
+
+
+		if (prmE[i] > 0)
+		{	
+			totalsent = (prmE[i] + secondE);
+			/*if(abs(totalsent - 40.272013) > 1.)
+			{
+				G4cout << "totalsent = " << (totalsent) << G4endl;
+				G4cout << "prmE = " << (prmE[i]) << G4endl;
+				G4cout << "secE = " << (secondE) << G4endl;
+			}*/
+		
+
+			analysisManager->FillH1(11,id*2,totalsent);
+			id++;
+			G4cout << "totalsent = " << (totalsent) << " prmE = " << (prmE[i]) << " secondE = " << (secondE) << " id = " << (id*2-1) << G4endl;
+
+				
+			lastEnergy = prmE[i];		
+		}
+	
+
+		/*if((secE[i] != 0) && (prmE[i] == 0))
+		{
+			secondE = 0;
+		}*/
+		//G4cout << "-- PRMI: " << prmE[i] << " PRMI-1: " << prmE[(i-2)] << G4endl;
+	}
+	G4cout << "EVENT ACTION BREAK" << G4endl;
+
+
+  } 
+
 
   // save histograms
   if ( analysisManager->IsActive() ) {  
@@ -161,6 +253,9 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
      << G4endl 
      << "------------------------------------------------------------" << G4endl 
      << G4endl;
+
+foo.unlock();
+barL.unlock();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
