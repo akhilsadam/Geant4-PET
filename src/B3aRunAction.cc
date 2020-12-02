@@ -39,6 +39,7 @@
 
 #include "B3aHistoManager.hh"
 #include "B3DetectorConstruction.hh"
+#include "B3SteppingAction.hh"
 #include <mutex>
 //#include "B3aHistoManager.cc" ///  NEED TO FIX -----
 //#include "B3SteppingAction.cc" ///  NEED TO FIX -----
@@ -141,6 +142,7 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
 	double lastEnergy = 100;
 	G4double secondE = 0;
 	G4int stepMax = fHistoManager->stepMaxV;
+	bool proceed = true;	
 
 	for(int i = 0; i < (stepMax); i++)
 	{
@@ -164,18 +166,27 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
 				G4cout << "HIT secE = " << (secondE) << G4endl;///
 			}
 		}*/
+
 		double diff = (prmE[i] - lastEnergy);
-		if((i>0) && (diff > 30))
+		if((i>0) && (diff > 0.0000001))
 		{
 			secondE = secE[i];
 			G4cout << "||\\-----RESET RESET -- secondE = " << secondE << " diff = "<< diff << G4endl;
+			if(prmE[i] < 19)
+			{
+				proceed = false;
+			}
+			else
+			{
+				proceed = true;
+			}
 			
 		}
 		//if(prmE[i]+secondE > 40 ){secondE = 0;}
 
+		lastEnergy = prmE[i];	
 
-
-		if (prmE[i] > 0)
+		if (proceed)//(prmE[i] > 0)
 		{	
 			totalsent = (prmE[i] + secondE);
 			/*if(abs(totalsent - 40.272013) > 1.)
@@ -186,12 +197,16 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
 			}*/
 		
 
-			analysisManager->FillH1(11,id*2,totalsent);
+			analysisManager->FillH1(11,id,totalsent);
 			id++;
-			G4cout << "totalsent = " << (totalsent) << " prmE = " << (prmE[i]) << " secondE = " << (secondE) << " id = " << (id*2-1) << G4endl;
+			G4cout << "totalsent = " << (totalsent) << " prmE = " << (prmE[i]) << " secondE = " << (secondE) << " id = " << (id-1) << G4endl;
 
-				
-			lastEnergy = prmE[i];		
+		}
+		
+
+		if((diff == 0) && (secE[i] ==0))
+		{
+			secondE =0;
 		}
 	
 
@@ -238,6 +253,7 @@ void B3aRunAction::EndOfRunAction(const G4Run* run)
      << "--------------------End of Global Run-----------------------"
      << G4endl
      << "  The run was " << nofEvents << " events ";
+     B3SteppingAction::id = 0;
   }
   else
   {

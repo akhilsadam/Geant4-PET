@@ -49,6 +49,8 @@
 #include "G4Scintillation.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "CADMesh.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B3DetectorConstruction::B3DetectorConstruction()
@@ -122,7 +124,7 @@ G4VPhysicalVolume* B3DetectorConstruction::Construct()
   G4double cosdPhi = std::cos(half_dPhi);
   G4double tandPhi = std::tan(half_dPhi);
   // 
-  G4double ring_R1 = 0.3*cryst_dY/tandPhi;
+  G4double ring_R1 = 0.5*cryst_dY/tandPhi;
   G4double ring_R2 = (ring_R1+cryst_dZ)/cosdPhi;
   //
   G4double detector_dZ = nb_rings*cryst_dX;
@@ -136,6 +138,7 @@ G4VPhysicalVolume* B3DetectorConstruction::Construct()
   //
    world_sizeXY = 2.4*ring_R2;
    world_sizeZ  = 1.2*detector_dZ;
+
   
   G4Box* solidWorld =    
     new G4Box("World",                       //its name
@@ -294,17 +297,36 @@ G4VPhysicalVolume* B3DetectorConstruction::Construct()
   //
   // patient
   //
+  auto skullMesh = CADMesh::TessellatedMesh::FromOBJ("skullV.obj");
+  skullMesh->SetScale(400);
+  skullMesh->SetOffset(G4ThreeVector(0,0,9));
+  auto solidSkull = skullMesh->GetSolid();
+
+  auto brainMesh = CADMesh::TessellatedMesh::FromOBJ("BrainV.obj");
+  brainMesh->SetScale(400);
+  brainMesh->SetOffset(G4ThreeVector(0,0,9));
+  auto solidBrain = brainMesh->GetSolid();
+
   G4double patient_radius = 8*cm;
   G4double patient_dZ = 10*cm;  
   G4Material* patient_mat = nist->FindOrBuildMaterial("G4_BRAIN_ICRP");
-    
+  G4Material* skull_mat = nist->FindOrBuildMaterial("G4_B-100_BONE"); 
+
   G4Tubs* solidPatient =
     new G4Tubs("Patient", 0., patient_radius, 0.5*patient_dZ, 0., twopi);
-      
-  G4LogicalVolume* logicPatient =                         
-    new G4LogicalVolume(solidPatient,        //its solid
+     
+  G4LogicalVolume* logicPatient =  
+	new G4LogicalVolume(solidSkull,        //its solid
+                        skull_mat,         //its material
+                        "PatientLV");  
+     
+  G4LogicalVolume* logicbrain =  
+	new G4LogicalVolume(solidBrain,        //its solid
                         patient_mat,         //its material
-                        "PatientLV");        //its name
+                        "BrainLV");                   
+    /*new G4LogicalVolume(solidPatient,        //its solid
+                        patient_mat,         //its material
+                        "PatientLV");        //its name*/
                
   //
   // place patient in world
@@ -317,9 +339,22 @@ G4VPhysicalVolume* B3DetectorConstruction::Construct()
                     false,                   //no boolean operation
                     0,                       //copy number
                     fCheckOverlaps);         // checking overlaps 
+
+  new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(),         //at (0,0,0)
+                    logicbrain,            //its logical volume
+                    "Patient",               //its name
+                    logicWorld,              //its mother  volume
+                    false,                   //no boolean operation
+                    0,                       //copy number
+                    fCheckOverlaps); 
                                           
   // Visualization attributes
   //
+
+G4VisAttributes* lbVis = new G4VisAttributes(G4Colour(0.1,0.1,0.8));
+logicbrain->SetVisAttributes (lbVis);
+//logicRing->SetVisAttributes (G4VisAttributes::GetInvisible());
   logicRing->SetVisAttributes (G4VisAttributes::GetInvisible());
   logicDetector->SetVisAttributes (G4VisAttributes::GetInvisible());    
 

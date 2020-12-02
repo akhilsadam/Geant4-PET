@@ -22,7 +22,10 @@ endif()
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/physics/general/include
+	${PROJECT_SOURCE_DIR}/physics/include)
 set(CMAKE_CXX_FLAGS "-g")
 
 #----------------------------------------------------------------------------
@@ -31,6 +34,8 @@ set(CMAKE_CXX_FLAGS "-g")
 #
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+file(COPY ${PROJECT_SOURCE_DIR}/BrainV.obj DESTINATION ${CMAKE_BINARY_DIR}/B3a)
+file(COPY ${PROJECT_SOURCE_DIR}/skullV.obj DESTINATION ${CMAKE_BINARY_DIR}/B3a)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries

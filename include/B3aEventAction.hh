@@ -32,7 +32,7 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
-
+#include "B3aHistoManager.hh"
 class B3aRunAction;
 
 /// Event action class

@@ -52,8 +52,8 @@
 std::mutex foo2;
 std::mutex barL2;
 G4int B3SteppingAction::id = 0;
-/*G4double lastEnergy=100;
-G4double seconds = 0;*/
+G4double lastEnergy=0;
+//G4double seconds = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -133,8 +133,8 @@ if(prim.compare("proton")==0)
 	if(Eprim <=0)
 		Eprim = 0;
 	//ADD ENERGY TO TOTAL LIST
-	//G4cout << "-- Primary: " << step->GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName()<<" || Ep: "<<(Eprim)<<G4endl;
-	//G4cout << " -- Edep: " <<(edep/MeV)<<G4endl;
+	G4cout << "-- Primary: " << step->GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName()<<" || Ep: "<<(Eprim) << "ID " << id << G4endl;
+	G4cout << " -- Edep: " <<(edep/MeV)<<G4endl;
 	Esec += (edep/MeV);	
 	//times.push_back((timeL/ns));	
 	//log the secondaries:
@@ -146,11 +146,11 @@ if(prim.compare("proton")==0)
  	const G4ParticleDefinition* pd = (const G4ParticleDefinition*) pp->GetParticleDefinition();
 	const std::string pdVar = pd->GetParticleName();
 
-	//G4cout << "-- Secondary: " << pdVar << " || Es: " << (pp->GetKineticEnergy()/MeV) << G4endl;
-	const G4VProcess* ps = prePoint->GetProcessDefinedStep();
-	if(ps)
+	G4cout << "-- Secondary: " << pdVar << " || Es: " << (pp->GetKineticEnergy()/MeV) << G4endl;
+	const G4VProcess* prePointStep = prePoint->GetProcessDefinedStep();
+	if(prePointStep)
 	{	
-		//G4cout << "-- - Secondary process name: " << (prePoint->GetProcessDefinedStep()->GetProcessName()) << G4endl;	
+		G4cout << "-- - Secondary process name: " << (prePoint->GetProcessDefinedStep()->GetProcessName()) << G4endl;	
 	}
 	Esec += (pp->GetKineticEnergy()/MeV);
 
@@ -216,7 +216,7 @@ if(prim.compare("proton")==0)
 if(prim.compare("proton")==0)
 {
 	//G4cout << "/|\\--- Total (should equal the previous primary): " << (Esec + Eprim) <<G4endl;
-	if((Esec + Eprim)>50)
+	if((Esec + Eprim)>80)
 	{
 		G4cout << "/|\\***********\\|/--- Error: E=" << ((Esec + Eprim)) << " MeV T=" << (timeL/ns) << " ns XYZ=" << xshifted << " " << yshifted  << " " << zshifted <<G4endl;
 		G4cout << "/|\\***********\\|/---" <<G4endl;
@@ -234,6 +234,8 @@ if(prim.compare("proton")==0)
 		analysisManager->FillH1(8, (timeL/ns), (Eprim));
 		analysisManager->FillH1(9, (id), (Eprim));
 		analysisManager->FillH1(10, (id), (Esec));
+		analysisManager->FillH1(12, (id), (Eprim-lastEnergy));
+		analysisManager->FillH1(13, (id), (Eprim-lastEnergy+Esec));
 		/*seconds+=Esec;
 		if(Eprim > 30.272)//lastEnergy)
 		{
@@ -244,6 +246,7 @@ if(prim.compare("proton")==0)
 		lastEnergy = Eprim;*/
 
 		id += 1;
+		lastEnergy = Eprim;
 	}
 }
   

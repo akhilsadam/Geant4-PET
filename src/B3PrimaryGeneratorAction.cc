@@ -54,8 +54,8 @@ B3PrimaryGeneratorAction::B3PrimaryGeneratorAction()
   G4ParticleDefinition* particle = particleTable->FindParticle("proton");//FindParticle("chargedgeantino");
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticlePosition(G4ThreeVector(0.,0.,0.));
-  fParticleGun->SetParticleEnergy(40*MeV);  //SetParticleEnergy(1*eV); between 70-250 MeV   
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1.,0.05*(G4UniformRand()-0.5),0.05*(G4UniformRand()-0.5)));
+  fParticleGun->SetParticleEnergy((40+40*(G4UniformRand()-0.5))*MeV); //SetParticleEnergy(1*eV)   
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1.,0.025*(G4UniformRand()-0.5),0.025*(G4UniformRand()-0.5)));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -88,7 +88,7 @@ if (particle == G4ChargedGeantino::ChargedGeantino()) {
   ///G4double x0  = 0*cm, y0  = 0*cm, z0  = 0*cm;
   ///G4double dx0 = 0*cm, dy0 = 0*cm, dz0 = 0*cm;   
   //G4double x0  = 4*cm, y0  = 4*cm, z0  = 4*cm; MODIFIED TO PLACE GUN OUTSIDE CHAMBER
-  G4double x0  = -24*cm, y0  = 0*cm, z0  = 4*cm;
+  G4double x0  = -24*cm, y0  = 5*cm, z0  = 0*cm;
   G4double dx0 = 1*cm, dy0 = 1*cm, dz0 = 1*cm; 
   x0 += dx0*2*(G4UniformRand()-0.5);
   y0 += dy0*2*(G4UniformRand()-0.5);
